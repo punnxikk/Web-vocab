@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocab – Psychology & People</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+[data-theme="dark"]{
+  --bg:#0d1210;--surface:#161e19;--surface2:#1e2820;--surface3:#263020;
+  --border:#2a3428;--accent:#6aaa80;--accent2:#8eca9a;
+  --text:#e2ede6;--text2:#a0b8a8;--muted:#687870;
+  --green:#5cb87a;--green-bg:#122418;--green-border:#1c4228;
+  --red:#e06060;--red-bg:#2a1515;--red-border:#4a2020;
+  --blue:#70b8cc;--yellow:#d4a843;--card-shadow:0 8px 40px rgba(0,0,0,0.5);
+}
+[data-theme="light"]{
+  --bg:#f2f7f4;--surface:#ffffff;--surface2:#eaf2ec;--surface3:#dceae0;
+  --border:#ccddd2;--accent:#2a7a4a;--accent2:#3a9a5a;
+  --text:#0f1f16;--text2:#3a5a44;--muted:#7a9a84;
+  --green:#1a7a3a;--green-bg:#e4f5ea;--green-border:#8ad0a0;
+  --red:#c0302a;--red-bg:#fdf0f0;--red-border:#f0b0b0;
+  --blue:#1a6a8a;--yellow:#9a6a10;--card-shadow:0 4px 20px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .25s,color .25s;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:var(–bg);border-bottom:1px solid var(–border);padding:.45rem 1.2rem;display:flex;align-items:center;gap:.6rem;backdrop-filter:blur(8px);}
+.logo{font-family:‘Cormorant Garamond’,serif;font-size:1.05rem;font-style:italic;color:var(–accent);flex:1;white-space:nowrap;}
+.mode-btns{display:flex;gap:.3rem;}
+.mbtn{padding:.27rem .78rem;border-radius:20px;border:1px solid var(–border);background:transparent;color:var(–muted);font-size:.72rem;font-family:‘DM Sans’,sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.mbtn.active{background:var(–accent);border-color:var(–accent);color:var(–bg);font-weight:600;}
+.stat-pill{font-size:.7rem;color:var(–muted);padding:.25rem .68rem;border:1px solid var(–border);border-radius:20px;white-space:nowrap;}
+.stat-pill span{color:var(–accent);font-weight:600;}
+.theme-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(–border);background:var(–surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.88rem;transition:all .2s;flex-shrink:0;}
+.theme-btn:hover{border-color:var(–accent);}
+
+.prog-bar{height:2px;background:var(–border);position:fixed;top:0;left:0;right:0;z-index:200;}
+.prog-fill{height:100%;background:var(–accent);transition:width .35s;}
+
+/* VIEWS */
+#view-browse,#view-flash,#view-test,#view-add{display:none;}
+#view-browse.active,#view-flash.active,#view-test.active,#view-add.active{display:block;}
+
+/* ══ BROWSE ══ */
+#view-browse{padding:1rem 1.2rem 4rem;max-width:960px;margin:0 auto;}
+.top-bar{display:flex;gap:.6rem;align-items:center;margin-bottom:.8rem;flex-wrap:wrap;}
+.kb-text{font-size:.73rem;color:var(–muted);}
+.kb-val{color:var(–accent);font-weight:600;}
+.kb-reset{font-size:.7rem;color:var(–muted);background:none;border:1px solid var(–border);border-radius:6px;padding:.18rem .55rem;cursor:pointer;font-family:‘DM Sans’,sans-serif;transition:all .2s;}
+.kb-reset:hover{border-color:var(–accent);color:var(–accent);}
+.search-wrap{margin-bottom:1rem;position:relative;}
+.search-inp{width:100%;padding:.52rem 1rem .52rem 2.2rem;background:var(–surface);border:1px solid var(–border);border-radius:10px;color:var(–text);font-size:.83rem;font-family:‘DM Sans’,sans-serif;outline:none;transition:border-color .2s;}
+.search-inp:focus{border-color:var(–accent);}
+.search-ico{position:absolute;left:.72rem;top:50%;transform:translateY(-50%);color:var(–muted);font-size:.8rem;pointer-events:none;}
+
+.word-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.55rem;}
+
+/* word card */
+.wcard{background:var(–surface);border:1px solid var(–border);border-radius:12px;padding:.8rem 1rem .8rem 1.1rem;position:relative;overflow:hidden;transition:all .18s;}
+.wcard::before{content:’’;position:absolute;left:0;top:0;bottom:0;width:3px;background:var(–accent);opacity:0;transition:opacity .2s;}
+.wcard.known{border-color:var(–green-border);background:var(–green-bg);}
+.wcard.known::before{background:var(–green);opacity:1;}
+.wcard:hover{border-color:var(–accent);}
+.wcard:hover::before{opacity:.5;}
+
+.w-top{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.18rem;}
+.w-en{font-family:‘Cormorant Garamond’,serif;font-size:1.1rem;font-weight:700;color:var(–text);}
+.w-pos{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(–accent);background:rgba(106,170,128,.12);padding:.1rem .4rem;border-radius:8px;white-space:nowrap;}
+.w-vi{font-size:.82rem;color:var(–blue);line-height:1.5;margin-bottom:.28rem;}
+.w-en-def{font-size:.76rem;color:var(–muted);line-height:1.45;font-style:italic;padding-bottom:.3rem;border-bottom:1px solid var(–border);margin-bottom:.3rem;}
+.w-col{font-size:.72rem;color:var(–yellow);line-height:1.5;}
+.w-col-label{font-weight:600;color:var(–muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;}
+
+.known-btn{position:absolute;top:.45rem;right:.55rem;width:22px;height:22px;border-radius:50%;background:var(–surface2);border:1px solid var(–border);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.known-btn:hover{border-color:var(–green);color:var(–green);}
+.wcard.known .known-btn{background:var(–green);border-color:var(–green);color:#fff;}
+
+/* ══ FLASH ══ */
+#view-flash{display:none;flex-direction:column;align-items:center;padding:1.2rem 1rem 4rem;min-height:100vh;}
+#view-flash.active{display:flex;}
+.flash-filter{display:flex;gap:.32rem;margin-bottom:.9rem;flex-wrap:wrap;justify-content:center;}
+.ff-btn{padding:.22rem .7rem;border-radius:20px;border:1px solid var(–border);background:transparent;color:var(–muted);font-size:.7rem;cursor:pointer;font-family:‘DM Sans’,sans-serif;transition:all .2s;}
+.ff-btn.active{background:var(–accent);color:var(–bg);font-weight:600;border-color:var(–accent);}
+.flash-meta{display:flex;gap:.8rem;align-items:center;margin-bottom:1.1rem;flex-wrap:wrap;justify-content:center;}
+.flash-prog{font-size:.75rem;color:var(–muted);}
+.flash-prog span{color:var(–accent);font-weight:600;}
+
+/* card */
+.card-scene{width:min(92vw,500px);height:300px;perspective:1000px;margin-bottom:1.4rem;cursor:pointer;}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .52s cubic-bezier(.4,0,.2,1);}
+.card-inner.flipped{transform:rotateY(180deg);}
+.card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.8rem 2rem;}
+
+/* FRONT: word + POS only */
+.card-front{background:var(–surface);border:1px solid var(–border);box-shadow:var(–card-shadow);}
+.cf-hint{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(–muted);margin-bottom:.7rem;}
+.cf-word{font-family:‘Cormorant Garamond’,serif;font-size:2.2rem;font-weight:700;color:var(–text);text-align:center;line-height:1.15;}
+.cf-pos{display:inline-block;margin-top:.55rem;font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(–accent);background:rgba(106,170,128,.12);padding:.18rem .65rem;border-radius:20px;}
+
+/* BACK: VI | EN + collocations */
+.card-back{transform:rotateY(180deg);background:var(–surface2);border:1px solid var(–accent);box-shadow:var(–card-shadow);overflow:hidden;}
+.cb-vi{font-size:1.1rem;color:var(–blue);text-align:center;line-height:1.55;font-weight:500;margin-bottom:.4rem;}
+.cb-divider{width:40px;height:1px;background:var(–border);margin:.3rem auto .4rem;}
+.cb-en{font-size:.8rem;color:var(–text2);text-align:center;line-height:1.55;font-style:italic;margin-bottom:.5rem;padding:0 .5rem;}
+.cb-col-wrap{background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.18);border-radius:8px;padding:.45rem .7rem;width:100%;max-width:360px;}
+.cb-col-label{font-size:.6rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(–yellow);margin-bottom:.22rem;}
+.cb-col{font-size:.76rem;color:var(–text2);line-height:1.55;}
+.cb-col em{color:var(–yellow);font-style:normal;font-weight:600;}
+
+.flash-actions{display:flex;gap:.65rem;margin-bottom:.9rem;}
+.fa-btn{padding:.48rem 1.25rem;border-radius:10px;border:none;font-size:.82rem;font-weight:600;cursor:pointer;font-family:‘DM Sans’,sans-serif;transition:all .18s;}
+.fa-forgot{background:var(–red-bg);color:var(–red);border:1px solid var(–red-border);}
+.fa-knew{background:var(–green-bg);color:var(–green);border:1px solid var(–green-border);}
+.fa-skip{background:var(–surface2);color:var(–muted);border:1px solid var(–border);}
+
+.flash-dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:360px;}
+.fdot{width:7px;height:7px;border-radius:50%;background:var(–border);transition:all .2s;cursor:pointer;}
+.fdot.curr{background:var(–accent);width:14px;border-radius:4px;}
+.fdot.knew{background:var(–green);}
+.fdot.forgot{background:var(–red);}
+
+/* ══ TEST ══ */
+#view-test{padding:1.1rem 1rem 4rem;max-width:600px;margin:0 auto;}
+.test-tabs{display:flex;gap:0;border:1px solid var(–border);border-radius:12px;overflow:hidden;margin-bottom:1.3rem;}
+.test-tab{flex:1;padding:.65rem .5rem;text-align:center;cursor:pointer;background:var(–surface);border:none;font-family:‘DM Sans’,sans-serif;font-size:.8rem;color:var(–muted);transition:all .2s;border-right:1px solid var(–border);}
+.test-tab:last-child{border-right:none;}
+.test-tab.active{background:var(–accent);color:var(–bg);font-weight:700;}
+.test-tab-label{display:block;font-weight:600;}
+.test-tab-sub{display:block;font-size:.66rem;margin-top:.08rem;opacity:.75;}
+.test-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;gap:.5rem;}
+.test-header-left h2{font-family:‘Cormorant Garamond’,serif;font-size:1.35rem;color:var(–text);}
+.test-header-left p{font-size:.74rem;color:var(–muted);margin-top:.08rem;}
+.test-reset-btn{font-size:.68rem;color:var(–muted);background:none;border:1px solid var(–border);border-radius:8px;padding:.2rem .62rem;cursor:pointer;font-family:‘DM Sans’,sans-serif;transition:all .2s;white-space:nowrap;}
+.test-reset-btn:hover{border-color:var(–accent);color:var(–accent);}
+
+.test-q{background:var(–surface);border:1px solid var(–border);border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:.9rem;}
+.tq-label{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(–accent);margin-bottom:.5rem;display:block;}
+.tq-prompt{font-size:.88rem;color:var(–text2);margin-bottom:.55rem;line-height:1.6;}
+.tq-prompt strong{color:var(–text);font-size:1rem;}
+.test-opts{display:grid;grid-template-columns:1fr 1fr;gap:.42rem;margin-top:.5rem;}
+.topt{padding:.5rem .82rem;border-radius:8px;border:1px solid var(–border);background:var(–surface2);color:var(–text);font-size:.82rem;cursor:pointer;font-family:‘DM Sans’,sans-serif;transition:all .15s;text-align:left;line-height:1.35;}
+.topt:hover:not(:disabled){border-color:var(–accent);color:var(–accent);}
+.topt.correct{background:var(–green-bg)!important;border-color:var(–green)!important;color:var(–green)!important;}
+.topt.wrong{background:var(–red-bg)!important;border-color:var(–red)!important;color:var(–red)!important;}
+.topt:disabled{cursor:default;}
+
+.test-fb{font-size:.77rem;margin-top:.42rem;padding:.48rem .72rem;border-radius:8px;display:none;line-height:1.55;}
+.test-fb.show{display:block;}
+.test-fb.ok{background:var(–green-bg);color:var(–green);border:1px solid var(–green-border);}
+.test-fb.bad{background:var(–red-bg);color:var(–text2);border:1px solid var(–red-border);}
+.test-next{width:100%;padding:.56rem;background:var(–accent);color:var(–bg);border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:‘DM Sans’,sans-serif;margin-top:.42rem;display:none;transition:opacity .2s;}
+.test-next.show{display:block;}
+.test-next:hover{opacity:.88;}
+
+/* review countdown */
+.auto-badge{display:inline-block;font-size:.62rem;background:rgba(106,170,128,.12);color:var(–accent);border:1px solid var(–border);border-radius:10px;padding:.08rem .45rem;margin-left:.35rem;vertical-align:middle;}
+.countdown-bar{height:3px;background:var(–border);border-radius:2px;margin-top:.45rem;overflow:hidden;}
+.countdown-fill{height:100%;background:var(–accent);transition:width linear;}
+
+.test-result{text-align:center;padding:2rem 1rem;display:none;}
+.test-result.show{display:block;}
+.tr-score{font-family:‘Cormorant Garamond’,serif;font-size:3.2rem;font-weight:700;color:var(–accent);}
+.tr-label{font-size:.83rem;color:var(–muted);margin:.25rem 0 1.3rem;}
+.tr-restart{padding:.52rem 1.35rem;background:var(–accent);color:var(–bg);border:none;border-radius:8px;font-size:.86rem;font-weight:700;cursor:pointer;font-family:‘DM Sans’,sans-serif;}
+
+.empty-state{text-align:center;padding:2.2rem 1rem;color:var(–muted);font-size:.84rem;line-height:1.7;}
+.empty-state .big{font-size:2rem;margin-bottom:.4rem;}
+
+/* ══ ADD WORD ══ */
+#view-add{padding:1.2rem 1.2rem 4rem;max-width:680px;margin:0 auto;}
+.add-header{margin-bottom:1.4rem;}
+.add-header h2{font-family:‘Cormorant Garamond’,serif;font-size:1.5rem;color:var(–text);}
+.add-header p{font-size:.78rem;color:var(–muted);margin-top:.25rem;}
+.add-form{background:var(–surface);border:1px solid var(–border);border-radius:16px;padding:1.4rem 1.6rem;margin-bottom:1.2rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.75rem;}
+.form-row.full{grid-template-columns:1fr;}
+.form-group{display:flex;flex-direction:column;gap:.3rem;}
+.form-label{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(–accent);}
+.form-input,.form-textarea{background:var(–surface2);border:1px solid var(–border);border-radius:8px;padding:.52rem .8rem;color:var(–text);font-size:.85rem;font-family:‘DM Sans’,sans-serif;outline:none;transition:border-color .2s;width:100%;}
+.form-input:focus,.form-textarea:focus{border-color:var(–accent);}
+.form-textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.form-hint{font-size:.68rem;color:var(–muted);margin-top:.18rem;}
+.col-rows{display:flex;flex-direction:column;gap:.4rem;}
+.col-row{display:flex;gap:.4rem;align-items:center;}
+.col-row .form-input{flex:1;}
+.col-row-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(–border);background:var(–surface3);color:var(–muted);cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.col-row-btn:hover{border-color:var(–red);color:var(–red);}
+.add-col-btn{font-size:.72rem;color:var(–accent);background:none;border:1px dashed var(–accent);border-radius:6px;padding:.25rem .7rem;cursor:pointer;font-family:‘DM Sans’,sans-serif;margin-top:.3rem;transition:all .2s;opacity:.7;}
+.add-col-btn:hover{opacity:1;}
+.btn-add-word{width:100%;padding:.65rem;background:var(–accent);color:var(–bg);border:none;border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;font-family:‘DM Sans’,sans-serif;margin-top:.5rem;transition:opacity .2s;}
+.btn-add-word:hover{opacity:.88;}
+.add-success{display:none;background:var(–green-bg);border:1px solid var(–green-border);border-radius:8px;padding:.6rem 1rem;font-size:.82rem;color:var(–green);margin-top:.5rem;text-align:center;}
+.add-success.show{display:block;}
+.added-list{background:var(–surface);border:1px solid var(–border);border-radius:14px;padding:1rem 1.2rem;}
+.added-list h3{font-size:.78rem;font-weight:600;color:var(–muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;}
+.added-item{display:flex;align-items:center;gap:.6rem;padding:.5rem 0;border-bottom:1px solid var(–border);}
+.added-item:last-child{border-bottom:none;}
+.ai-word{font-family:‘Cormorant Garamond’,serif;font-size:1rem;font-weight:700;color:var(–text);flex:1;}
+.ai-pos{font-size:.62rem;color:var(–accent);background:rgba(106,170,128,.12);padding:.08rem .38rem;border-radius:6px;}
+.ai-vi{font-size:.76rem;color:var(–blue);flex:2;}
+.ai-del{background:none;border:none;color:var(–muted);cursor:pointer;font-size:.85rem;padding:.2rem;border-radius:4px;transition:color .2s;}
+.ai-del:hover{color:var(–red);}
+.empty-added{font-size:.8rem;color:var(–muted);text-align:center;padding:1rem 0;font-style:italic;}
+</style>
+
+</head>
+<body>
+<div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+
+<nav>
+  <div class="logo">🧠 Vocab – Psychology &amp; People</div>
+  <div class="mode-btns">
+    <button class="mbtn active" onclick="setMode('browse',this)">Browse</button>
+    <button class="mbtn" onclick="setMode('flash',this)">Flashcard</button>
+    <button class="mbtn" onclick="setMode('test',this)">Test</button>
+  </div>
+  <div class="stat-pill">✓ <span id="known-stat">0</span>/<span id="total-stat">25</span></div>
+  <button class="mbtn" onclick="setMode('add',this)">＋ Thêm từ</button>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+</nav>
+
+<!-- BROWSE -->
+
+<div id="view-browse" class="active">
+  <div style="max-width:960px;margin:0 auto;padding:1rem 1.2rem 4rem;">
+    <div class="top-bar">
+      <span class="kb-text">✓ Đã nhớ: <span class="kb-val" id="known-count">0</span></span>
+      <span class="kb-text">· Chưa nhớ: <span class="kb-val" id="unknown-count">25</span></span>
+      <button class="kb-reset" onclick="resetKnown()">↺ Reset tất cả</button>
+    </div>
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" id="search-inp" placeholder="Tìm từ, nghĩa..." oninput="filterWords(this.value)">
+    </div>
+    <div class="word-grid" id="browse-grid"></div>
+  </div>
+</div>
+
+<!-- FLASH -->
+
+<div id="view-flash">
+  <div class="flash-filter">
+    <button class="ff-btn active" onclick="setFF('all',this)">Tất cả</button>
+    <button class="ff-btn" onclick="setFF('unknown',this)">Chưa nhớ</button>
+    <button class="ff-btn" onclick="setFF('known',this)">Đã nhớ</button>
+  </div>
+  <div class="flash-meta">
+    <span class="flash-prog">Card <span id="fc-curr">1</span> / <span id="fc-total">25</span></span>
+  </div>
+  <div class="card-scene" onclick="flipCard()">
+    <div class="card-inner" id="card-inner">
+      <!-- FRONT -->
+      <div class="card-face card-front">
+        <div class="cf-hint">Click để xem nghĩa</div>
+        <div class="cf-word" id="cf-word"></div>
+        <div class="cf-pos" id="cf-pos"></div>
+      </div>
+      <!-- BACK -->
+      <div class="card-face card-back">
+        <div class="cb-vi" id="cb-vi"></div>
+        <div class="cb-divider"></div>
+        <div class="cb-en" id="cb-en"></div>
+        <div class="cb-col-wrap" id="cb-col-wrap">
+          <div class="cb-col-label">Collocations</div>
+          <div class="cb-col" id="cb-col"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flash-actions">
+    <button class="fa-btn fa-forgot" onclick="flashAns(false)">✗ Chưa nhớ</button>
+    <button class="fa-btn fa-skip" onclick="flashNext()">→ Skip</button>
+    <button class="fa-btn fa-knew" onclick="flashAns(true)">✓ Nhớ rồi</button>
+  </div>
+  <div class="flash-dots" id="flash-dots"></div>
+</div>
+
+<!-- TEST -->
+
+<div id="view-test">
+  <div class="test-tabs">
+    <button class="test-tab active" onclick="switchTab('learn',this)">
+      <span class="test-tab-label">📖 Cần học</span>
+      <span class="test-tab-sub">Từ chưa tích ✓</span>
+    </button>
+    <button class="test-tab" onclick="switchTab('review',this)">
+      <span class="test-tab-label">⚡ Review nhanh</span>
+      <span class="test-tab-sub">Từ đã tích ✓ · Tự nhảy câu</span>
+    </button>
+  </div>
+
+  <div id="panel-learn">
+    <div class="test-header">
+      <div class="test-header-left"><h2>Test – Cần học</h2><p id="lsub">Từ chưa tích ✓</p></div>
+      <button class="test-reset-btn" onclick="startLearn()">↺ Reset</button>
+    </div>
+    <div id="learn-body"></div>
+    <div class="test-result" id="learn-result">
+      <div class="tr-score" id="l-score"></div>
+      <div class="tr-label" id="l-label"></div>
+      <button class="tr-restart" onclick="startLearn()">🔁 Test lại</button>
+    </div>
+  </div>
+
+  <div id="panel-review" style="display:none">
+    <div class="test-header">
+      <div class="test-header-left"><h2>Review nhanh <span class="auto-badge">Tự nhảy câu</span></h2><p id="rsub">Từ đã tích ✓</p></div>
+      <button class="test-reset-btn" onclick="startReview()">↺ Reset</button>
+    </div>
+    <div id="review-body"></div>
+    <div class="test-result" id="review-result">
+      <div class="tr-score" id="r-score"></div>
+      <div class="tr-label" id="r-label"></div>
+      <button class="tr-restart" onclick="startReview()">🔁 Review lại</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD WORD -->
+
+<div id="view-add">
+  <div class="add-header">
+    <h2>＋ Thêm từ vựng mới</h2>
+    <p>Từ bạn thêm sẽ xuất hiện ngay trong Browse, Flashcard và Test</p>
+  </div>
+
+  <div class="add-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Từ / Cụm từ *</label>
+        <input class="form-input" id="inp-word" placeholder="vd: resilient">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Loại từ *</label>
+        <input class="form-input" id="inp-pos" placeholder="vd: adj. / n. / phr. v.">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label class="form-label">Nghĩa tiếng Việt *</label>
+        <input class="form-input" id="inp-vi" placeholder="vd: kiên cường, có khả năng phục hồi">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label class="form-label">Nghĩa tiếng Anh *</label>
+        <input class="form-input" id="inp-en" placeholder="vd: able to recover quickly from difficulties">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label class="form-label">Collocations <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted)">(tuỳ chọn — mỗi dòng 1 collocation)</span></label>
+        <div class="col-rows" id="col-rows">
+          <div class="col-row">
+            <input class="form-input" placeholder="vd: be <em>resilient</em> in the face of...">
+            <button class="col-row-btn" onclick="removeColRow(this)" title="Xoá">✕</button>
+          </div>
+        </div>
+        <button class="add-col-btn" onclick="addColRow()">＋ Thêm collocation</button>
+        <div class="form-hint">Dùng &lt;em&gt;từ&lt;/em&gt; để in đậm từ trong collocation — hoặc để trắng cũng được</div>
+      </div>
+    </div>
+    <button class="btn-add-word" onclick="addWord()">＋ Thêm vào bộ từ vựng</button>
+    <div class="add-success" id="add-success">✓ Đã thêm thành công! Từ đã xuất hiện trong Browse.</div>
+  </div>
+
+  <div class="added-list">
+    <h3>Từ bạn đã thêm (<span id="added-count">0</span>)</h3>
+    <div id="added-items"><div class="empty-added">Chưa có từ nào được thêm</div></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   VOCAB DATA
+   col: collocations — only contextually relevant ones
+═══════════════════════════════════════════════ */
+const WORDS = [
+  {
+    w:"expression", pos:"n.",
+    vi:"sự diễn đạt, sự bày tỏ (ý nghĩ, cảm xúc)",
+    en:"the process of making known one's thoughts or feelings",
+    col:[
+      "freedom of <em>expression</em>",
+      "facial <em>expression</em>",
+      "<em>expression</em> of emotion / joy / anger",
+      "give <em>expression</em> to sth"
+    ]
+  },
+  {
+    w:"make sense", pos:"phr. v.",
+    vi:"có nghĩa, hợp lý, dễ hiểu",
+    en:"to be logical or easy to understand",
+    col:[
+      "it <em>makes sense</em> to do sth",
+      "does this <em>make sense</em>?",
+      "<em>make sense</em> of sth (= hiểu ra điều gì)"
+    ]
+  },
+  {
+    w:"result", pos:"n.",
+    vi:"kết quả",
+    en:"the outcome of an experiment, action, or problem",
+    col:[
+      "<em>result</em> of sth",
+      "as a <em>result</em> (of) — vì vậy, do đó",
+      "get / achieve a <em>result</em>",
+      "positive / negative <em>result</em>"
+    ]
+  },
+  {
+    w:"trigger", pos:"v.",
+    vi:"gây ra, kích hoạt (dẫn đến phản ứng lớn hơn)",
+    en:"to cause an action that leads to a greater reaction",
+    col:[
+      "<em>trigger</em> a reaction / response / emotion",
+      "<em>trigger</em> anxiety / depression",
+      "be <em>triggered</em> by sth (bị kích hoạt bởi)"
+    ]
+  },
+  {
+    w:"instinctively", pos:"adv.",
+    vi:"theo bản năng, một cách vô thức",
+    en:"acting on inner feeling; done without thinking",
+    col:[
+      "react <em>instinctively</em>",
+      "know / feel sth <em>instinctively</em>",
+      "act <em>instinctively</em> (không cần suy nghĩ)"
+    ]
+  },
+  {
+    w:"personality", pos:"n.",
+    vi:"tính cách, cá tính (tổng hợp đặc điểm tâm lý của một người)",
+    en:"the combination of qualities that make a person unique",
+    col:[
+      "strong / outgoing / shy <em>personality</em>",
+      "<em>personality</em> type / trait",
+      "have a <em>personality</em>",
+      "<em>personality</em> disorder"
+    ]
+  },
+  {
+    w:"tendency", pos:"n.",
+    vi:"khuynh hướng, xu hướng (thường làm gì đó)",
+    en:"a likelihood of behaving in a certain way",
+    col:[
+      "a <em>tendency</em> to do sth",
+      "have a <em>tendency</em> towards sth",
+      "natural <em>tendency</em>",
+      "show a <em>tendency</em> to..."
+    ]
+  },
+  {
+    w:"universal", pos:"adj.",
+    vi:"phổ biến, có ở khắp nơi, toàn cầu",
+    en:"relating to or done by everyone in the world",
+    col:[
+      "<em>universal</em> truth / value",
+      "<em>universal</em> agreement / appeal",
+      "be <em>universal</em> (áp dụng cho tất cả)"
+    ]
+  },
+  {
+    w:"confirm", pos:"v.",
+    vi:"xác nhận, khẳng định (điều đã biết hoặc nghi ngờ)",
+    en:"to verify; to state or show that something is true",
+    col:[
+      "<em>confirm</em> a theory / belief / finding",
+      "<em>confirm</em> that...",
+      "<em>confirm</em> sb's suspicion",
+      "<em>confirm</em> a booking / appointment (xác nhận đặt chỗ)"
+    ]
+  },
+  {
+    w:"react", pos:"v.",
+    vi:"phản ứng (với điều gì đó xảy ra)",
+    en:"to respond to something that happens",
+    col:[
+      "<em>react</em> to sth",
+      "<em>react</em> with anger / surprise / fear",
+      "overreact (phản ứng thái quá)",
+      "how did they <em>react</em>?"
+    ]
+  },
+  {
+    w:"frown", pos:"v. / n.",
+    vi:"cau mày (biểu hiện không thích, lo lắng, hoặc tập trung)",
+    en:"a facial expression showing dislike, worry, or concentration",
+    col:[
+      "<em>frown</em> at sb/sth",
+      "<em>frown</em> in concentration / disapproval",
+      "be <em>frowned</em> upon (bị coi là không được chấp nhận)",
+      "a deep <em>frown</em>"
+    ]
+  },
+  {
+    w:"introvert", pos:"n.",
+    vi:"người hướng nội (nạp lại năng lượng khi ở một mình)",
+    en:"a shy person who enjoys being alone more than with others",
+    col:[
+      "a classic / typical <em>introvert</em>",
+      "<em>introvert</em> vs extrovert",
+      "introverted (adj) — mang tính hướng nội",
+      "<em>introvert</em> personality"
+    ]
+  },
+  {
+    w:"extrovert", pos:"n.",
+    vi:"người hướng ngoại (nạp lại năng lượng khi ở cùng người khác)",
+    en:"a person who enjoys being with others and feels energized by socializing",
+    col:[
+      "a natural <em>extrovert</em>",
+      "extroverted (adj) — mang tính hướng ngoại",
+      "<em>extrovert</em> personality",
+      "be an <em>extrovert</em>"
+    ]
+  },
+  {
+    w:"awkward", pos:"adj.",
+    vi:"ngượng ngùng, lúng túng (trong tình huống xã hội)",
+    en:"feeling uncomfortable or nervous in social situations",
+    col:[
+      "feel <em>awkward</em> (around sb)",
+      "<em>awkward</em> silence / moment",
+      "socially <em>awkward</em>",
+      "<em>awkward</em> situation"
+    ]
+  },
+  {
+    w:"anxiety", pos:"n.",
+    vi:"sự lo lắng, lo âu (về điều có thể xảy ra)",
+    en:"a feeling of worry or nervousness about something uncertain",
+    col:[
+      "social <em>anxiety</em>",
+      "<em>anxiety</em> about sth",
+      "suffer from <em>anxiety</em>",
+      "cause / trigger <em>anxiety</em>",
+      "<em>anxiety</em> disorder"
+    ]
+  },
+  {
+    w:"socialize", pos:"v.",
+    vi:"giao lưu, hòa nhập, tiếp xúc xã hội",
+    en:"to spend time with others in a friendly, social way",
+    col:[
+      "<em>socialize</em> with sb",
+      "<em>socialize</em> at work / school",
+      "enjoy / avoid <em>socializing</em>",
+      "opportunity to <em>socialize</em>"
+    ]
+  },
+  {
+    w:"differ", pos:"v.",
+    vi:"khác nhau, không giống nhau",
+    en:"to be unlike something else; to be not the same",
+    col:[
+      "<em>differ</em> from sb/sth",
+      "<em>differ</em> in opinion / approach",
+      "significantly / greatly <em>differ</em>",
+      "opinions <em>differ</em> on..."
+    ]
+  },
+  {
+    w:"thrive", pos:"v.",
+    vi:"phát triển mạnh, lớn mạnh, nở rộ",
+    en:"to grow, develop, or do very well",
+    col:[
+      "<em>thrive</em> on sth (phát triển nhờ vào...)",
+      "<em>thrive</em> in an environment",
+      "extroverts <em>thrive</em> in social settings",
+      "business / plant <em>thrives</em>"
+    ]
+  },
+  {
+    w:"upset", pos:"adj.",
+    vi:"buồn, khó chịu, lo lắng, bực bội",
+    en:"feeling sad, worried, or emotionally disturbed",
+    col:[
+      "feel / get <em>upset</em>",
+      "<em>upset</em> about / over sth",
+      "<em>upset</em> sb (làm ai buồn — dùng như v.)",
+      "deeply / visibly <em>upset</em>"
+    ]
+  },
+  {
+    w:"lack", pos:"n. / v.",
+    vi:"sự thiếu hụt / thiếu (điều gì đó quan trọng)",
+    en:"not having enough of something needed",
+    col:[
+      "a <em>lack</em> of sth (n.) — sự thiếu hụt",
+      "<em>lack</em> sth (v.) — thiếu điều gì",
+      "<em>lack</em> confidence / motivation / sleep",
+      "due to a <em>lack</em> of..."
+    ]
+  },
+  {
+    w:"lead to", pos:"phr. v.",
+    vi:"dẫn đến, gây ra (hậu quả hoặc kết quả)",
+    en:"to cause something to happen as a result",
+    col:[
+      "<em>lead to</em> problems / depression / success",
+      "this can <em>lead to</em> serious consequences",
+      "stress <em>leads to</em> anxiety",
+      "often / eventually <em>leads to</em>..."
+    ]
+  },
+  {
+    w:"depression", pos:"n.",
+    vi:"trầm cảm (cảm giác buồn bã kéo dài và nghiêm trọng)",
+    en:"a serious condition causing persistent sadness and loss of interest",
+    col:[
+      "suffer from <em>depression</em>",
+      "clinical <em>depression</em>",
+      "<em>depression</em> and anxiety",
+      "treat / overcome <em>depression</em>",
+      "fall into <em>depression</em>"
+    ]
+  },
+  {
+    w:"in the company of", pos:"phr.",
+    vi:"ở cùng với, có mặt bên cạnh (ai đó)",
+    en:"being with someone; in someone's presence",
+    col:[
+      "feel comfortable <em>in the company of</em> others",
+      "thrive <em>in the company of</em> friends",
+      "relax <em>in the company of</em> sb"
+    ]
+  },
+  {
+    w:"well-being", pos:"n.",
+    vi:"sự an lành, sức khỏe (cả thể chất lẫn tinh thần)",
+    en:"a state of being comfortable, healthy, and happy",
+    col:[
+      "emotional / mental / physical <em>well-being</em>",
+      "promote / improve <em>well-being</em>",
+      "affect sb's <em>well-being</em>",
+      "sense of <em>well-being</em>"
+    ]
+  },
+  {
+    w:"generous", pos:"adj.",
+    vi:"hào phóng, rộng lượng (cho nhiều hơn mức cần thiết)",
+    en:"willing to give more than expected; kind in giving or helping",
+    col:[
+      "be <em>generous</em> with sth (time / money / praise)",
+      "<em>generous</em> offer / donation / gift",
+      "incredibly / extremely <em>generous</em>",
+      "<em>generous</em> towards others"
+    ]
+  }
+];
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let known={};
+try{known=JSON.parse(localStorage.getItem('psyv_known')||'{}');}catch(e){}
+function saveKnown(){try{localStorage.setItem('psyv_known',JSON.stringify(known));}catch(e){}}
+function isKnown(w){return !!known[w];}
+function setKnown(w,v){if(v)known[w]=true;else delete known[w];saveKnown();updateStats();}
+function resetKnown(){known={};saveKnown();updateStats();buildBrowse();}
+function updateStats(){
+  const k=Object.keys(known).filter(x=>known[x]).length;
+  document.getElementById('known-stat').textContent=k;
+  document.getElementById('known-count').textContent=k;
+  document.getElementById('unknown-count').textContent=WORDS.length-k;
+  document.querySelectorAll('.wcard').forEach(c=>c.classList.toggle('known',isKnown(c.dataset.word)));
+}
+
+let isDark=true;
+function toggleTheme(){
+  isDark=!isDark;
+  document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
+  document.getElementById('theme-btn').textContent=isDark?'🌙':'☀️';
+}
+
+function setMode(m,btn){
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('[id^="view-"]').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+m).classList.add('active');
+  if(m==='flash')startFlash();
+  if(m==='test'){startLearn();startReview();}
+}
+
+/* ═══════════════════════════════════════════════
+   ADD WORD
+═══════════════════════════════════════════════ */
+let userAdded = [];
+try{ userAdded = JSON.parse(localStorage.getItem('psyv_added')||'[]'); }catch(e){}
+// push existing user words into WORDS on load
+userAdded.forEach(w=>{ if(!WORDS.find(x=>x.w===w.w)) WORDS.push(w); });
+
+function addColRow(){
+  const rows=document.getElementById('col-rows');
+  const div=document.createElement('div');div.className='col-row';
+  div.innerHTML=`<input class="form-input" placeholder="collocation..."><button class="col-row-btn" onclick="removeColRow(this)" title="Xoá">✕</button>`;
+  rows.appendChild(div);
+}
+function removeColRow(btn){
+  const row=btn.closest('.col-row');
+  const rows=document.getElementById('col-rows');
+  if(rows.querySelectorAll('.col-row').length>1) row.remove();
+  else row.querySelector('input').value='';
+}
+
+function addWord(){
+  const w=document.getElementById('inp-word').value.trim();
+  const pos=document.getElementById('inp-pos').value.trim();
+  const vi=document.getElementById('inp-vi').value.trim();
+  const en=document.getElementById('inp-en').value.trim();
+  if(!w||!pos||!vi||!en){ alert('Vui lòng điền đủ 4 trường bắt buộc (*)'); return; }
+  if(WORDS.find(x=>x.w.toLowerCase()===w.toLowerCase())){
+    alert(`"${w}" đã có trong bộ từ vựng rồi!`); return;
+  }
+  // collect collocations
+  const cols=[...document.getElementById('col-rows').querySelectorAll('.col-row input')]
+    .map(i=>i.value.trim()).filter(Boolean);
+  const newWord={w,pos,vi,en,col:cols};
+  WORDS.push(newWord);
+  userAdded.push(newWord);
+  try{localStorage.setItem('psyv_added',JSON.stringify(userAdded));}catch(e){}
+
+  // clear form
+  document.getElementById('inp-word').value='';
+  document.getElementById('inp-pos').value='';
+  document.getElementById('inp-vi').value='';
+  document.getElementById('inp-en').value='';
+  document.getElementById('col-rows').innerHTML=`<div class="col-row"><input class="form-input" placeholder="vd: be <em>resilient</em> in the face of..."><button class="col-row-btn" onclick="removeColRow(this)" title="Xoá">✕</button></div>`;
+
+  // show success
+  const suc=document.getElementById('add-success');suc.classList.add('show');setTimeout(()=>suc.classList.remove('show'),2500);
+
+  // rebuild browse & added list
+  buildBrowse();renderAddedList();updateStats();
+}
+
+function renderAddedList(){
+  const ctr=document.getElementById('added-items');
+  document.getElementById('added-count').textContent=userAdded.length;
+  if(!userAdded.length){ctr.innerHTML='<div class="empty-added">Chưa có từ nào được thêm</div>';return;}
+  ctr.innerHTML=userAdded.map((w,i)=>`
+    <div class="added-item">
+      <span class="ai-word">${w.w}</span>
+      <span class="ai-pos">${w.pos}</span>
+      <span class="ai-vi">${w.vi}</span>
+      <button class="ai-del" onclick="deleteAdded(${i})" title="Xoá từ này">🗑</button>
+    </div>`).join('');
+}
+
+function deleteAdded(i){
+  const w=userAdded[i];
+  userAdded.splice(i,1);
+  const idx=WORDS.findIndex(x=>x.w===w.w);
+  if(idx>-1)WORDS.splice(idx,1);
+  delete known[w.w];saveKnown();
+  try{localStorage.setItem('psyv_added',JSON.stringify(userAdded));}catch(e){}
+  buildBrowse();renderAddedList();updateStats();
+}
+
+/* ═══════════════════════════════════════════════
+   BROWSE
+═══════════════════════════════════════════════ */
+function buildBrowse(){
+  const grid=document.getElementById('browse-grid');grid.innerHTML='';
+  WORDS.forEach(wobj=>{
+    const card=document.createElement('div');
+    card.className='wcard'+(isKnown(wobj.w)?' known':'');
+    card.dataset.word=wobj.w;
+    const colHtml=wobj.col.map(c=>`<div>· ${c}</div>`).join('');
+    card.innerHTML=`
+      <button class="known-btn" onclick="toggleKC('${esc(wobj.w)}',this)">✓</button>
+      <div class="w-top"><span class="w-en">${wobj.w}</span><span class="w-pos">${wobj.pos}</span></div>
+      <div class="w-vi">${wobj.vi}</div>
+      <div class="w-en-def">${wobj.en}</div>
+      ${wobj.col.length?`<div class="w-col-label">Collocations</div><div class="w-col">${colHtml}</div>`:''}`;
+    grid.appendChild(card);
+  });
+  updateStats();
+}
+
+function toggleKC(w,btn){
+  setKnown(w,!isKnown(w));
+  btn.closest('.wcard').classList.toggle('known',isKnown(w));
+}
+
+function filterWords(q){
+  const ql=q.toLowerCase();
+  document.querySelectorAll('.wcard').forEach(card=>{
+    const w=card.dataset.word;
+    const wobj=WORDS.find(x=>x.w===w);
+    const match=!ql||w.toLowerCase().includes(ql)||wobj.vi.toLowerCase().includes(ql)||wobj.en.toLowerCase().includes(ql);
+    card.style.display=match?'':'none';
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   FLASH
+═══════════════════════════════════════════════ */
+let fQ=[],fI=0,fFlip=false,fRes={},fFilt='all';
+function getPool(){let p=[...WORDS];if(fFilt==='unknown')p=p.filter(w=>!isKnown(w.w));if(fFilt==='known')p=p.filter(w=>isKnown(w.w));return shuffle(p);}
+function setFF(f,btn){fFilt=f;document.querySelectorAll('.ff-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');startFlash();}
+function startFlash(){fQ=getPool();fI=0;fFlip=false;fRes={};if(!fQ.length){document.getElementById('cf-word').textContent='Không có từ!';return;}buildFDots();showFC();}
+function showFC(){
+  if(fI>=fQ.length){document.getElementById('cf-word').textContent='🎉 Xong!';document.getElementById('cf-pos').textContent='';document.getElementById('card-inner').classList.remove('flipped');return;}
+  const c=fQ[fI];fFlip=false;
+  document.getElementById('card-inner').classList.remove('flipped');
+  document.getElementById('cf-word').textContent=c.w;
+  document.getElementById('cf-pos').textContent=c.pos;
+  document.getElementById('cb-vi').textContent=c.vi;
+  document.getElementById('cb-en').textContent=c.en;
+  const colWrap=document.getElementById('cb-col-wrap');
+  if(c.col&&c.col.length){
+    document.getElementById('cb-col').innerHTML=c.col.map(x=>`<div>· ${x}</div>`).join('');
+    colWrap.style.display='block';
+  } else {colWrap.style.display='none';}
+  document.getElementById('fc-curr').textContent=fI+1;
+  document.getElementById('fc-total').textContent=fQ.length;
+  updateFDots();
+  document.getElementById('prog-fill').style.width=((fI+1)/fQ.length*100)+'%';
+}
+function flipCard(){fFlip=!fFlip;document.getElementById('card-inner').classList.toggle('flipped',fFlip);}
+function flashAns(knew){const c=fQ[fI];fRes[c.w]=knew;setKnown(c.w,knew);updateFDots();flashNext();}
+function flashNext(){fI++;showFC();}
+function buildFDots(){const c=document.getElementById('flash-dots');c.innerHTML='';fQ.forEach((_,i)=>{const d=document.createElement('div');d.className='fdot';d.id=`fd-${i}`;d.onclick=()=>{fI=i;fFlip=false;showFC();};c.appendChild(d);});}
+function updateFDots(){fQ.forEach((_,i)=>{const d=document.getElementById(`fd-${i}`);if(!d)return;d.className='fdot';if(i===fI)d.classList.add('curr');else if(fRes[fQ[i].w]===true)d.classList.add('knew');else if(fRes[fQ[i].w]===false)d.classList.add('forgot');});}
+
+/* ═══════════════════════════════════════════════
+   TEST
+═══════════════════════════════════════════════ */
+function switchTab(t,btn){
+  document.querySelectorAll('.test-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('panel-learn').style.display=t==='learn'?'block':'none';
+  document.getElementById('panel-review').style.display=t==='review'?'block':'none';
+}
+
+/* ── LEARN (manual next) ── */
+let lQ=[],lI=0,lS=0,lAns=false;
+function startLearn(){
+  const pool=WORDS.filter(w=>!isKnown(w.w));
+  document.getElementById('lsub').textContent=`${pool.length} từ chưa tích ✓`;
+  if(!pool.length){document.getElementById('learn-body').innerHTML=`<div class="empty-state"><div class="big">🎉</div>Tất cả từ đã tích ✓<br>Sang <strong>Review nhanh</strong> để ôn lại.</div>`;document.getElementById('learn-result').classList.remove('show');return;}
+  lQ=shuffle([...pool]).slice(0,Math.min(20,pool.length));lI=0;lS=0;lAns=false;
+  document.getElementById('learn-result').classList.remove('show');document.getElementById('learn-body').innerHTML='';showLQ();
+}
+function showLQ(){
+  if(lI>=lQ.length){showLResult();return;}
+  const q=lQ[lI];
+  const wrongs=shuffle(WORDS.filter(w=>w.w!==q.w)).slice(0,3);
+  const opts=shuffle([{...q,c:true},...wrongs.map(w=>({...w,c:false}))]);
+  lAns=false;
+  const div=document.createElement('div');div.className='test-q';div.id='lq';
+  div.innerHTML=`
+    <span class="tq-label">Câu ${lI+1}/${lQ.length}</span>
+    <div class="tq-prompt">Nghĩa tiếng Việt: <strong>${q.vi}</strong></div>
+    <div style="font-size:.72rem;color:var(--muted);margin-bottom:.2rem">Từ tiếng Anh nào tương ứng?</div>
+    <div class="test-opts">${opts.map(o=>`<button class="topt" onclick="ansL(${o.c},this,'${esc(q.w)}')">${o.w} <span style="font-size:.68rem;color:var(--muted)">${o.pos}</span></button>`).join('')}</div>
+    <div class="test-fb" id="lfb"></div>
+    <button class="test-next" id="lnext" onclick="nextL()">Tiếp theo →</button>`;
+  document.getElementById('learn-body').innerHTML='';document.getElementById('learn-body').appendChild(div);
+  document.getElementById('prog-fill').style.width=(lI/lQ.length*100)+'%';
+}
+function ansL(correct,btn,cw){
+  if(lAns)return;lAns=true;
+  document.querySelectorAll('#lq .topt').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('lfb');
+  if(correct){
+    btn.classList.add('correct');
+    fb.innerHTML='✓ Chính xác!';fb.className='test-fb show ok';
+    lS++;setKnown(cw,true);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('#lq .topt').forEach(b=>{if(b.textContent.includes(cw))b.classList.add('correct');});
+    const cobj=WORDS.find(w=>w.w===cw);
+    fb.innerHTML=`✗ Sai. Đáp án: <strong>${cw}</strong> — <span style="color:var(--blue)">${cobj?cobj.vi:''}</span>`;
+    fb.className='test-fb show bad';setKnown(cw,false);
+  }
+  document.getElementById('lnext').classList.add('show');
+}
+function nextL(){lAns=false;lI++;showLQ();}
+function showLResult(){
+  document.getElementById('learn-body').innerHTML='';
+  const pct=Math.round(lS/lQ.length*100);
+  document.getElementById('l-score').textContent=`${lS}/${lQ.length}`;
+  document.getElementById('l-label').textContent=pct>=90?'Xuất sắc! 🏆':pct>=70?'Tốt lắm! 👍':pct>=50?'Ổn — ôn thêm nhé.':'Học lại nhiều hơn 📖';
+  document.getElementById('learn-result').classList.add('show');
+  document.getElementById('prog-fill').style.width='100%';
+}
+
+/* ── REVIEW (auto-advance 1.5s) ── */
+let rQ=[],rI=0,rS=0,rAns=false,rT=null;
+function startReview(){
+  const pool=WORDS.filter(w=>isKnown(w.w));
+  document.getElementById('rsub').textContent=`${pool.length} từ đã tích ✓`;
+  if(!pool.length){document.getElementById('review-body').innerHTML=`<div class="empty-state"><div class="big">📌</div>Chưa tích ✓ từ nào<br>Vào <strong>Browse</strong> tích từ đã nhớ trước nhé.</div>`;document.getElementById('review-result').classList.remove('show');return;}
+  rQ=shuffle([...pool]).slice(0,Math.min(20,pool.length));rI=0;rS=0;rAns=false;if(rT)clearTimeout(rT);
+  document.getElementById('review-result').classList.remove('show');document.getElementById('review-body').innerHTML='';showRQ();
+}
+function showRQ(){
+  if(rI>=rQ.length){showRResult();return;}
+  const q=rQ[rI];
+  const wrongs=shuffle(WORDS.filter(w=>w.w!==q.w)).slice(0,3);
+  const opts=shuffle([{...q,c:true},...wrongs.map(w=>({...w,c:false}))]);
+  rAns=false;
+  const div=document.createElement('div');div.className='test-q';div.id='rq';
+  div.innerHTML=`
+    <span class="tq-label">Câu ${rI+1}/${rQ.length} <span style="font-size:.58rem;color:var(--accent);opacity:.7">· tự nhảy câu</span></span>
+    <div class="tq-prompt">Nghĩa tiếng Việt: <strong>${q.vi}</strong></div>
+    <div style="font-size:.72rem;color:var(--muted);margin-bottom:.2rem">Từ tiếng Anh nào tương ứng?</div>
+    <div class="test-opts">${opts.map(o=>`<button class="topt" onclick="ansR(${o.c},this,'${esc(q.w)}')">${o.w} <span style="font-size:.68rem;color:var(--muted)">${o.pos}</span></button>`).join('')}</div>
+    <div class="test-fb" id="rfb"></div>
+    <div style="display:none" id="rcd"><div class="countdown-bar"><div class="countdown-fill" id="rcd-fill" style="width:100%"></div></div></div>`;
+  document.getElementById('review-body').innerHTML='';document.getElementById('review-body').appendChild(div);
+  document.getElementById('prog-fill').style.width=(rI/rQ.length*100)+'%';
+}
+function ansR(correct,btn,cw){
+  if(rAns)return;rAns=true;
+  document.querySelectorAll('#rq .topt').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('rfb');
+  if(correct){
+    btn.classList.add('correct');fb.innerHTML='✓ Chính xác!';fb.className='test-fb show ok';rS++;
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('#rq .topt').forEach(b=>{if(b.textContent.includes(cw))b.classList.add('correct');});
+    const cobj=WORDS.find(w=>w.w===cw);
+    fb.innerHTML=`✗ Sai. Đáp án: <strong>${cw}</strong> — <span style="color:var(--blue)">${cobj?cobj.vi:''}</span>`;
+    fb.className='test-fb show bad';
+  }
+  const cd=document.getElementById('rcd'),fill=document.getElementById('rcd-fill');
+  if(cd){cd.style.display='block';fill.style.transition='none';fill.style.width='100%';setTimeout(()=>{fill.style.transition='width 1.5s linear';fill.style.width='0%';},30);}
+  rT=setTimeout(()=>{rAns=false;rI++;showRQ();},1500);
+}
+function showRResult(){
+  document.getElementById('review-body').innerHTML='';
+  const pct=Math.round(rS/rQ.length*100);
+  document.getElementById('r-score').textContent=`${rS}/${rQ.length}`;
+  document.getElementById('r-label').textContent=pct>=90?'Xuất sắc! Đã nắm vững 🏆':pct>=70?'Tốt! Vẫn nhớ được phần lớn 👍':'Cần ôn lại thêm.';
+  document.getElementById('review-result').classList.add('show');
+  document.getElementById('prog-fill').style.width='100%';
+}
+
+/* ═══════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════ */
+function esc(s){return s.replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+/* INIT */
+buildBrowse();updateStats();renderAddedList();
+document.getElementById('panel-review').style.display='none';
+</script>
+
+</body>
+</html>
